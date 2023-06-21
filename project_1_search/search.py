@@ -19,6 +19,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -86,19 +87,98 @@ def depthFirstSearch(problem: SearchProblem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    stack = util.Stack(); ## Stack to store the nodes to be visited
+    parent = dict(); ## Dictionary to store the parent of each node
+    steps = list(); ## List to store the steps to reach the goal state
+    haveVisited = set(); ## Set to store the nodes that have been visited
+    startState = (problem.getStartState(), None, None); ## Start State
+
+    while(not stack.isEmpty()):
+        state = stack.pop(); ## Get the first element from the stack
+        haveVisited.add(state); ## Add the state to the visited set
+        if(problem.isGoalState(state[0])):
+            ## Traverse Back to the start state to get the steps
+            while(state != startState):
+                steps.append(state[1]);
+                state = parent[state];
+            steps.reverse();
+            return steps;
+
+        successors = problem.getSuccessors(state[0]);
+        for successor in successors:
+            if(successor[0] not in haveVisited):
+                stack.push(successor);
+                parent[successor] = state;
+    return None; ## Goal State was not found
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    que = util.Queue(); ## Queue to store the nodes to be visited
+    parent = dict(); ## Dictionary to store the parent of each node
+    steps = list(); ## List to store the steps to reach the goal state
+    haveVisited = set(); ## Set to store the nodes that have been visited
+
+    startState = (problem.getStartState(), None, None); ## Start State
+    haveVisited.add(startState); ## Add the start state to the visited set
+    parent[startState] = None; ## Start State has no parent
+    que.push(startState); ## Add the start state to the queue
+
+    while(not que.isEmpty()):
+        state = que.pop(); ## Get the first element from the queue
+
+        if(problem.isGoalState(state[0])):
+            ## Traverse Back to the start state to get the steps
+            while(state != startState):
+                steps.append(state[1]);
+                state = parent[state];
+            steps.reverse();
+            return steps;
+
+        successors = problem.getSuccessors(state[0]);
+        for successor in successors:
+            if(successor[0] not in haveVisited):
+                que.push(successor);
+                parent[successor] = state;
+                haveVisited.add(successor[0]);  ## Visit the current state
+    return None; ## Goal State was not found
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    ### BFS , but search the node with least cost first , Sort the successor by cost , or we can use a priority queue to get the node with least cost
 
+    que = util.Queue(); ## Queue to store the nodes to be visited
+    parent = dict(); ## Dictionary to store the parent of each node
+    steps = list(); ## List to store the steps to reach the goal state
+    haveVisited = set(); ## Set to store the nodes that have been visited
+
+    startState = (problem.getStartState(), None, None); ## Start State
+    haveVisited.add(startState); ## Add the start state to the visited set
+    parent[startState] = None; ## Start State has no parent
+    que.push(startState); ## Add the start state to the queue
+
+    while(not que.isEmpty()):
+        state = que.pop(); ## Get the first element from the queue
+
+        if(problem.isGoalState(state[0])):
+            ## Traverse Back to the start state to get the steps
+            while(state != startState):
+                steps.append(state[1]);
+                state = parent[state];
+            steps.reverse();
+            return steps;
+
+        successors = problem.getSuccessors(state[0]);
+        successors.sort(key = lambda x: x[2]); ## Sort the successors by cost
+        for successor in successors:
+            if(successor[0] not in haveVisited):
+                que.push(successor);
+                parent[successor] = state;
+                haveVisited.add(successor[0]);  ## Visit the current state
+    return None; ## Goal State was not found
+
+            
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
@@ -108,8 +188,46 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    priorityQue = util.PriorityQueue()
+    have_visited = set()
+
+    start_state = problem.getStartState()
+    priorityQue.push((start_state, list()), heuristic(start_state, problem))
+
+    while(not priorityQue.isEmpty()):
+        state, path = priorityQue.pop()  # Take current state and path
+        have_visited.add(state)  # Visit the current state
+
+        # Found goal state
+        if (problem.isGoalState(state)): return path
+
+        successors = problem.getSuccessors(state)
+        for successor in successors:
+
+            # Already have visited the particular node
+            if (successor[0] in have_visited): continue
+            
+            # Search to see if successor already exists in the frontier(priorityQue)
+            frontier_exists = False
+            for element in priorityQue.heap:
+                if (successor[0] == element[2][0]):
+                    frontier_exists = True
+                    break
+            
+            heuristicValue = heuristic(successor[0], problem)  # heuristic cost
+
+            newPath = path + [successor[1]]
+            newPriority = problem.getCostOfActions(newPath)
+
+            # State does not exist either in searched state nor in the frontier, insert it
+            if (not frontier_exists):
+                priorityQue.push((successor[0], newPath), newPriority + heuristicValue)
+            
+            # Successor exists in the frontier with a higher path cost - update its path cost
+            elif (problem.getCostOfActions(element[2][1]) > newPriority):
+                priorityQue.update((successor[0], newPath), newPriority + heuristicValue)
+    
+    return None;    ## Goal State was not found
 
 
 # Abbreviations
