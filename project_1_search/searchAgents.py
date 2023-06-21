@@ -339,8 +339,8 @@ class CornersProblem(search.SearchProblem):
             goals = list(state[1])
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
-            hit_Walls = self.walls[nextx][nexty]
-            if not hit_Walls:
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
                 if (nextx,nexty) in goals:
                     goals.remove((nextx,nexty))
                 goals = tuple(goals)    
