@@ -92,91 +92,82 @@ def depthFirstSearch(problem: SearchProblem):
     parent = dict(); ## Dictionary to store the parent of each node
     steps = list(); ## List to store the steps to reach the goal state
     haveVisited = set(); ## Set to store the nodes that have been visited
-    startState = (problem.getStartState(), None, None); ## Start State
+    startState = (problem.getStartState(), [], 1); ## Start State
+    stack.push(startState); ## Add the start state to the stack
+
 
     while(not stack.isEmpty()):
         state = stack.pop(); ## Get the first element from the stack
-        haveVisited.add(state); ## Add the state to the visited set
-        if(problem.isGoalState(state[0])):
-            ## Traverse Back to the start state to get the steps
-            while(state != startState):
-                steps.append(state[1]);
-                state = parent[state];
-            steps.reverse();
-            return steps;
 
-        successors = problem.getSuccessors(state[0]);
-        for successor in successors:
-            if(successor[0] not in haveVisited):
-                stack.push(successor);
-                parent[successor] = state;
-    return None; ## Goal State was not found
+        steps = state[1];
+        if(problem.isGoalState(state[0])):
+            return state[1]; ## Return the steps to reach the goal state
+
+        
+        if(state[0] not in haveVisited):
+            haveVisited.add(state[0]);  ## Visit the current state
+
+            children = problem.getSuccessors(state[0]); ## Get the children of the current state
+    
+            for child in children:
+                stack.push((child[0],steps+[child[1]],1));  ## Add the children to the stack
+    return steps; ## Goal State was not found
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
 
     que = util.Queue(); ## Queue to store the nodes to be visited
-    parent = dict(); ## Dictionary to store the parent of each node
     steps = list(); ## List to store the steps to reach the goal state
     haveVisited = set(); ## Set to store the nodes that have been visited
 
-    startState = (problem.getStartState(), None, None); ## Start State
-    haveVisited.add(startState); ## Add the start state to the visited set
-    parent[startState] = None; ## Start State has no parent
+    startState = (problem.getStartState(), [], 1); ## Start State
     que.push(startState); ## Add the start state to the queue
 
     while(not que.isEmpty()):
         state = que.pop(); ## Get the first element from the queue
-
+        steps = state[1];
+    
         if(problem.isGoalState(state[0])):
-            ## Traverse Back to the start state to get the steps
-            while(state != startState):
-                steps.append(state[1]);
-                state = parent[state];
-            steps.reverse();
             return steps;
+    
+        if(state[0] not in haveVisited):
+            haveVisited.add(state[0]);  ## Visit the current state
 
-        successors = problem.getSuccessors(state[0]);
-        for successor in successors:
-            if(successor[0] not in haveVisited):
-                que.push(successor);
-                parent[successor] = state;
-                haveVisited.add(successor[0]);  ## Visit the current state
-    return None; ## Goal State was not found
+            successors = problem.getSuccessors(state[0]);
+            for successor in successors:
+                que.push((successor[0],steps+[successor[1]],1));  ## Add the children to the queue
+        
+    return steps; ## Goal State was not found
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
-    ### BFS , but search the node with least cost first , Sort the successor by cost , or we can use a priority queue to get the node with least cost
+    visited_nodes = []
+    from util import PriorityQueue
+    priority_queue = PriorityQueue()
 
-    que = util.Queue(); ## Queue to store the nodes to be visited
-    parent = dict(); ## Dictionary to store the parent of each node
-    steps = list(); ## List to store the steps to reach the goal state
-    haveVisited = set(); ## Set to store the nodes that have been visited
+    start_state = problem.getStartState()
+    priority_queue.push((start_state, [], 1), 0)
 
-    startState = (problem.getStartState(), None, None); ## Start State
-    haveVisited.add(startState); ## Add the start state to the visited set
-    parent[startState] = None; ## Start State has no parent
-    que.push(startState); ## Add the start state to the queue
+    while not priority_queue.isEmpty():
+        current_node, path_to_node, path_cost = priority_queue.pop()
 
-    while(not que.isEmpty()):
-        state = que.pop(); ## Get the first element from the queue
+        if problem.isGoalState(current_node):
+            return path_to_node
 
-        if(problem.isGoalState(state[0])):
-            ## Traverse Back to the start state to get the steps
-            while(state != startState):
-                steps.append(state[1]);
-                state = parent[state];
-            steps.reverse();
-            return steps;
+        if current_node not in visited_nodes:
+            visited_nodes.append(current_node)
 
-        successors = problem.getSuccessors(state[0]);
-        successors.sort(key = lambda x: x[2]); ## Sort the successors by cost
-        for successor in successors:
-            if(successor[0] not in haveVisited):
-                que.push(successor);
-                parent[successor] = state;
-                haveVisited.add(successor[0]);  ## Visit the current state
-    return None; ## Goal State was not found
+            successors = problem.getSuccessors(current_node)
+
+            for successor in successors:
+                successor_state, action_to_successor, successor_cost = successor
+                total_cost = successor_cost + path_cost
+
+                updated_path = path_to_node + [action_to_successor]
+                priority_queue.push((successor_state, updated_path, total_cost), total_cost)
+
+    return []
+
 
             
 def nullHeuristic(state, problem=None):

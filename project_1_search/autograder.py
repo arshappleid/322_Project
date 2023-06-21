@@ -14,7 +14,7 @@
 
 # imports from python standard library
 import grading
-import importlib as imp
+import imp
 import optparse
 import os
 import re
@@ -134,8 +134,7 @@ import py_compile
 
 def loadModuleFile(moduleName, filePath):
     with open(filePath, 'r') as f:
-        return imp.import_module(moduleName, f, "%s.py" % moduleName, (".py", "r", imp.PY_SOURCE));
-        #return imp.import_module(moduleName, f, "%s.py" % moduleName, (".py", "r", imp.PY_SOURCE))
+        return imp.load_module(moduleName, f, "%s.py" % moduleName, (".py", "r", imp.PY_SOURCE))
 
 
 def readFile(path, root=""):
