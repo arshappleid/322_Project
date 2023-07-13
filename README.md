@@ -1,1 +1,2 @@
-# 322_Project
+# Search and Reinforcement Learning Project
+•	A Pacman gaming bot that made used Naïve Bayes Algorithm , Supervised Learning and Reinforcement Learning through a Neural Network to play against a Human User. 
